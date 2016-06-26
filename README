@@ -1,0 +1,97 @@
+
+About.
+~~~~~~
+
+This is a very simple gateway allowing to control MT4 terminal(s) by
+an external program using Fix protocol. In particular it alows to read
+quotes from charts and to execute trading orders. Gateway is able to
+serve only one TCP/IP connection at the time. 
+
+This program is distributed as is without any warranty. We have used
+it in our project and it mostly worked fine. If you have any problem,
+please contact the author.
+
+The gateway keeps some information about orders. The info is
+initialized when gateway starts and updated when orders are executed
+via gateway.  This info may be desynchronized if you close an order
+manually. In such a case it is better to restart MT4.
+
+
+
+
+Installation of binaries
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+To use precompiled version of this bridge:
+
+1.) Copy files fixOrderGateway.ex4 and fixQuoteSender.ex4 from directory "experts"
+    to your metatrader terminal installation directory "experts". I.e. if your metatrader
+    installation directory is something like C:\Program Files\MetaTrader - Alpari UK, then
+    copy those files into C:\Program Files\MetaTrader - Alpari UK\experts.
+
+2.) Copy file fixGateway.dll from directory "experts/libraries" to
+    your metatrader directory experts/libraries. I.e. for example to
+    C:\Program Files\MetaTrader - Alpari UK\experts\libraries.
+
+3.) Restart your metatrader terminal. FixOrderGateway and
+    FixQuoteSender shall be listed in your Expert Advisors list.
+
+4.) Drag and drop FixOrderGateway to one chart (say EUR/GBP) and drag
+    and drop fixQuoteSender to all charts from where you wants to
+    receive quotes. In the dialog which appears, check "Allow live
+    trading", "Allow dll import" and uncheck "Confirm dll function
+    calls".
+
+
+It is done. If everything goes well the gateway is running. You can
+connect to it on the port 9871.  This is a very simple gateway, you
+will need to restart it iften after loosing a conenction or when
+something goes wrong.
+
+
+
+
+Compiling from source code.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The dll is compiled using MinGW compiler and Msys environment. To
+recompile it from source install MinGW (with Msys), unpack the gateway
+distribution into your msys home directory and run make. You may need to
+modify Makefile to add/remove metatrader terminal directories.
+
+To recompile EA sources fixOrderGateway.mq4 and fixQuoteSender.mq4 use the
+compiler coming with your metatrader terminal.
+
+
+Customizing the gateway.
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can customize gateway with MT4 global variables.
+
+fixGatewayPort   - is storing the port number where fixGateway listen for connections.
+
+fixGatewayAlerts - if non zero, Alerts will be displayed on each fixGateway action.
+
+
+
+
+Simple check.
+~~~~~~~~~~~~~
+
+You can check whether the gateway is running by a simple check.  If
+your gateway is running on a computer with IP say 192.168.1.126 and
+you have telnet installed, run the command:
+
+  telnet 192.168.1.126 9871
+
+If the gateway is running you shall see quotes coming from the fix
+gateway. Note that no other program can be connected to the gateway at
+the time of check.
+
+On a Linux box you can use echo to execute an order. For example the command:
+
+((echo -n -e '8=FIX.4.4\00019=149\000135=D\000149=T\000156=ALP\000134=5\000152=20130117-10:48:09.342\00011=0000\000111=41962105\000121=1\000138=1000\000140=1\000147=A\000154=1\000155=EURUSD\000159=1\000160=20130117-10:48:09.342\0001100=MBTX\0001553=M\000110=237\0001'; sleep 5; echo -n -e '8=FIX.4.4\00019=149\000135=D\000149=T\000156=ALP\000134=6\000152=20130117-10:48:15.316\00011=0000\000111=41962106\000121=1\000138=1000\000140=1\000147=A\000154=2\000155=EURUSD\000159=1\000160=20130117-10:48:15.316\0001100=MBTX\0001553=M\000110=236\0001') & sleep 10 ) | telnet 192.168.1.126 9871 | od -c
+
+will buy 1000 EUR/USD, wait 5 seconds and sell it.
+
